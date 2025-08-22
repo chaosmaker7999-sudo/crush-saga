@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sweetheart Crush</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ffafbd, #ffc3a0);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .game-container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #ff6b6b, #ff8e8e);
+            padding: 15px;
+            text-align: center;
+            color: white;
+            border-bottom: 5px solid #ff5252;
+        }
+        
+        .game-title {
+            font-size: 24px;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .level-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: #fff5f5;
+            border-bottom: 2px solid #ffecec;
+        }
+        
+        .info-box {
+            text-align: center;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 10px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        
+        .info-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff5252;
+        }
+        
+        .game-board {
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 5px;
+            background: #fffaf0;
+        }
+        
+        .candy {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .candy:hover {
+            transform: scale(1.05);
+        }
+        
+        .candy.selected {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px white, 0 0 0 5px #ff6b6b;
+        }
+        
+        .candy.matched {
+            animation: pop 0.5s forwards;
+        }
+        
+        @keyframes pop {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        
+        .controls {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            background: #fff5f5;
+            border-top: 2px solid #ffecec;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(to right, #ff6b6b, #ff8e8e);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .reward-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 107, 107, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            display: none;
+            z-index: 10;
+        }
+        
+        .love-letter {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 90%;
+            color: #ff6b6b;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .letter-header {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #ff5252;
+        }
+        
+        .letter-content {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        
+        .letter-signature {
+            font-style: italic;
+            text-align: right;
+            margin-top: 10px;
+            color: #ff8e8e;
+        }
+        
+        .hearts-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .heart {
+            position: absolute;
+            font-size: 20px;
+            opacity: 0;
+            animation: float 6s ease-in infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+        
+        .star-rating {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        
+        .star {
+            font-size: 24px;
+            color: #ddd;
+        }
+        
+        .star.filled {
+            color: #ffcc00;
+        }
+        
+        @media (max-width: 500px) {
+            .game-board {
+                grid-template-columns: repeat(8, 1fr);
+                gap: 3px;
+            }
+            
+            .info-value {
+                font-size: 16px;
+            }
+            
+            button {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1 class="game-title">💖 Sweetheart Crush</h1>
+            <p>For Mehul - Match candies to reveal love letters!</p>
+        </div>
+        
+        <div class="level-info">
+            <div class="info-box">
+                <div class="info-label">LEVEL</div>
+                <div class="info-value" id="level">1</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">MOVES LEFT</div>
+                <div class="info-value" id="moves">15</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">TARGET</div>
+                <div class="info-value" id="target">1000</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">SCORE</div>
+                <div class="info-value" id="score">0</div>
+            </div>
+        </div>
+        
+        <div class="star-rating">
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+        </div>
+        
+        <div class="game-board" id="board"></div>
+        
+        <div class="controls">
+            <button id="hint">💡 Hint</button>
+            <button id="reset">🔄 Restart</button>
+            <button id="next">Next Level →</button>
+        </div>
+        
+        <div class="reward-screen" id="reward">
+            <div class="love-letter">
+                <h2 class="letter-header">My Dearest Mehul</h2>
+                <p class="letter-content" id="letter-text"></p>
+                <p class="letter-signature">With all my love 💖</p>
+                <div class="hearts-container" id="hearts"></div>
+            </div>
+            <button id="continue" style="margin-top: 20px;">Continue Playing</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Game variables
+            let currentLevel = 1;
+            let movesLeft = 15;
+            let targetScore = 1000;
+            let currentScore = 0;
+            let selectedCandy = null;
+            let board = [];
+            let candyTypes = ['red', 'blue', 'green', 'yellow', 'purple'];
+            let gameActive = true;
+            
+            // Love letters for Mehul (30 unique messages)
+            const loveLetters = [
+                "Every level I complete brings me closer to you in my heart. You are the sweetest candy in my life, Mehul.",
+                "Just like matching these candies, we were meant to be together. Thinking of you with every move I make.",
+                "My love for you grows with each passing moment, just like my score in this game. You're my high score, Mehul!",
+                "You're the reason I smile with every match. This game is fun, but you're the real joy in my life.",
+                "With every candy I match, I'm reminded of how perfect we are together. You complete me, Mehul.",
+                "Life with you is sweeter than any candy in this game. Thank you for being my sweetheart.",
+                "Each level represents another day I'm grateful to have you in my life. You're my prize, Mehul.",
+                "Just like these candies, my love for you comes in many colors - all of them bright and beautiful.",
+                "No matter how many moves it takes, I'll always choose you, Mehul. You're my perfect match.",
+                "You're the target score I always strive for in life. With you, I've already won the game of love.",
+                "My heart skips a beat with every match, just like it does when I see you. You're my ultimate reward.",
+                "This game is fun, but nothing compares to the adventure of loving you. Every day with you is a new level of happiness.",
+                "Just as these candies create beautiful combinations, we create beautiful memories together. I cherish each one.",
+                "You're the special candy in the game of my life - rare, precious, and worth searching for.",
+                "With every match, I'm reminded how lucky I am to have found my perfect match in you, Mehul.",
+                "The way these candies cascade is beautiful, but not as beautiful as the way your love transforms my life.",
+                "You're my hidden bonus, my unexpected joy, and my greatest reward. I love you, Mehul.",
+                "Just like planning my moves in this game, I look forward to planning our future together.",
+                "No matter how difficult the level, knowing you're there cheering me on makes everything easier.",
+                "You're the reason I believe in sweet miracles. My love for you is higher than any score could measure.",
+                "Each candy matched is like another reason I love you piling up - too many to count!",
+                "In the game of love, you're the grand prize I never knew I needed but now can't live without.",
+                "Just as these candies bring joy when they match, you bring joy to my life every single day.",
+                "You're my power-up, my extra moves, and my bonus points all rolled into one amazing person.",
+                "With every level I complete, I'm reminded that challenges are easier when I have you to think about.",
+                "You make my heart do the same happy dance as when I make a special combo in this game!",
+                "My love for you is like the perfect match - it creates a chain reaction of happiness in my life.",
+                "You're the candy that brightens my board, the special piece that makes everything better.",
+                "Just like this game, life is more fun with you in it. You're my player two, my partner, my love.",
+                "Completing all 30 levels is nothing compared to the achievement of having your love, Mehul. You're everything."
+            ];
+            
+            // DOM elements
+            const boardElement = document.getElementById('board');
+            const levelElement = document.getElementById('level');
+            const movesElement = document.getElementById('moves');
+            const targetElement = document.getElementById('target');
+            const scoreElement = document.getElementById('score');
+            const hintButton = document.getElementById('hint');
+            const resetButton = document.getElementById('reset');
+            const nextButton = document.getElementById('next');
+            const rewardScreen = document.getElementById('reward');
+            const letterText = document.getElementById('letter-text');
+            const heartsContainer = document.getElementById('hearts');
+            const continueButton = document.getElementById('continue');
+            const stars = document.querySelectorAll('.star');
+            
+            // Initialize the game
+            initGame();
+            
+            // Event listeners
+            hintButton.addEventListener('click', giveHint);
+            resetButton.addEventListener('click', resetLevel);
+            nextButton.addEventListener('click', nextLevel);
+            continueButton.addEventListener('click', () => {
+                rewardScreen.style.display = 'none';
+            });
+            
+            // Initialize game board
+            function initGame() {
+                updateUI();
+                generateBoard();
+                setupBoard();
+            }
+            
+            // Generate procedural level data
+            function generateBoard() {
+                movesLeft = 15 + Math.floor(currentLevel / 3) * 5;
+                targetScore = 1000 + (currentLevel - 1) * 350;
+                
+                // Reset board array
+                board = [];
+                
+                // Create a board with 8x8 grid
+                for (let row = 0; row < 8; row++) {
+                    board[row] = [];
+                    for (let col = 0; col < 8; col++) {
+                        // Random candy type
+                        const randomType = candyTypes[Math.floor(Math.random() * candyTypes.length)];
+                        board[row][col] = randomType;
+                    }
+                }
+                
+                // Ensure there are matches at the start
+                while (!hasValidMoves()) {
+                    for (let row = 0; row < 8; row++) {
+                        for (let col = 0; col < 8; col++) {
+                            const randomType = candyTypes[Math.floor(Math.random() * candyTypes.length)];
+                            board[row][col] = randomType;
+                        }
+                    }
+                }
+            }
+            
+            // Set up the game board UI
+            function setupBoard() {
+                boardElement.innerHTML = '';
+                
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const candy = document.createElement('div');
+                        candy.className = `candy ${board[row][col]}`;
+                        candy.dataset.row = row;
+                        candy.dataset.col = col;
+                        candy.style.backgroundColor = getCandyColor(board[row][col]);
+                        
+                        candy.addEventListener('click', () => {
+                            if (!gameActive) return;
+                            
+                            if (!selectedCandy) {
+                                // First candy selected
+                                selectedCandy = candy;
+                                candy.classList.add('selected');
+                            } else {
+                                // Second candy selected - try to swap
+                                const firstRow = parseInt(selectedCandy.dataset.row);
+                                const firstCol = parseInt(selectedCandy.dataset.col);
+                                const secondRow = parseInt(candy.dataset.row);
+                                const secondCol = parseInt(candy.dataset.col);
+                                
+                                // Check if candies are adjacent
+                                if (areAdjacent(firstRow, firstCol, secondRow, secondCol)) {
+                                    swapCandies(firstRow, firstCol, secondRow, secondCol);
+                                    selectedCandy.classList.remove('selected');
+                                    selectedCandy = null;
+                                    
+                                    // Decrease moves
+                                    movesLeft--;
+                                    updateUI();
+                                    
+                                    // Check for game over
+                                    if (movesLeft <= 0) {
+                                        setTimeout(() => {
+                                            if (currentScore >= targetScore) {
+                                                showReward();
+                                            } else {
+                                                alert('Game Over! Try again.');
+                                                resetLevel();
+                                            }
+                                        }, 500);
+                                    }
+                                } else {
+                                    // Not adjacent, just select the new candy
+                                    selectedCandy.classList.remove('selected');
+                                    selectedCandy = candy;
+                                    candy.classList.add('selected');
+                                }
+                            }
+                        });
+                        
+                        boardElement.appendChild(candy);
+                    }
+                }
+            }
+            
+            // Get color for candy type
+            function getCandyColor(type) {
+                const colors = {
+                    'red': '#ff6b6b',
+                    'blue': '#4ecdc4',
+                    'green': '#9ee6a0',
+                    'yellow': '#ffd166',
+                    'purple': '#b18fcf'
+                };
+                return colors[type];
+            }
+            
+            // Check if two positions are adjacent
+            function areAdjacent(row1, col1, row2, col2) {
+                return (
+                    (Math.abs(row1 - row2) === 1 && col1 === col2) ||
+                    (Math.abs(col1 - col2) === 1 && row1 === row2)
+                );
+            }
+            
+            // Swap candies and check for matches
+            function swapCandies(row1, col1, row2, col2) {
+                // Swap in the array
+                const temp = board[row1][col1];
+                board[row1][col1] = board[row2][col2];
+                board[row2][col2] = temp;
+                
+                // Check if the swap creates a match
+                if (checkForMatches()) {
+                    // Update board
+                    setupBoard();
+                    // Cascade candies
+                    setTimeout(cascadeCandies, 300);
+                } else {
+                    // Swap back if no match
+                    const temp = board[row1][col1];
+                    board[row1][col1] = board[row2][col2];
+                    board[row2][col2] = temp;
+                }
+            }
+            
+            // Check for matches on the board
+            function checkForMatches() {
+                let hasMatches = false;
+                
+                // Check horizontal matches
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 6; col++) {
+                        if (board[row][col] && 
+                            board[row][col] === board[row][col+1] && 
+                            board[row][col] === board[row][col+2]) {
+                            
+                            // Found a match
+                            hasMatches = true;
+                            let matchLength = 3;
+                            
+                            // Check for longer matches
+                            while (col + matchLength < 8 && board[row][col] === board[row][col+matchLength]) {
+                                matchLength++;
+                            }
+                            
+                            // Calculate points (more points for longer matches)
+                            const points = matchLength * 100;
+                            currentScore += points;
+                            updateUI();
+                            
+                            // Remove matched candies
+                            for (let i = 0; i < matchLength; i++) {
+                                board[row][col+i] = null;
+                            }
+                            
+                            col += matchLength - 1;
+                        }
+                    }
+                }
+                
+                // Check vertical matches
+                for (let col = 0; col < 8; col++) {
+                    for (let row = 0; row < 6; row++) {
+                        if (board[row][col] && 
+                            board[row][col] === board[row+1][col] && 
+                            board[row][col] === board[row+2][col]) {
+                            
+                            // Found a match
+                            hasMatches = true;
+                            let matchLength = 3;
+                            
+                            // Check for longer matches
+                            while (row + matchLength < 8 && board[row][col] === board[row+matchLength][col]) {
+                                matchLength++;
+                            }
+                            
+                            // Calculate points (more points for longer matches)
+                            const points = matchLength * 100;
+                            currentScore += points;
+                            updateUI();
+                            
+                            // Remove matched candies
+                            for (let i = 0; i < matchLength; i++) {
+                                board[row+i][col] = null;
+                            }
+                            
+                            row += matchLength - 1;
+                        }
+                    }
+                }
+                
+                return hasMatches;
+            }
+            
+            // Cascade candies down and fill empty spaces
+            function cascadeCandies() {
+                for (let col = 0; col < 8; col++) {
+                    let emptySpaces = 0;
+                    
+                    // Move candies down
+                    for (let row = 7; row >= 0; row--) {
+                        if (board[row][col] === null) {
+                            emptySpaces++;
+                        } else if (emptySpaces > 0) {
+                            board[row + emptySpaces][col] = board[row][col];
+                            board[row][col] = null;
+                        }
+                    }
+                    
+                    // Fill top spaces with new candies
+                    for (let row = 0; row < emptySpaces; row++) {
+                        const randomType = candyTypes[Math.floor(Math.random() * candyTypes.length)];
+                        board[row][col] = randomType;
+                    }
+                }
+                
+                // Update board
+                setupBoard();
+                
+                // Check for new matches
+                if (checkForMatches()) {
+                    setTimeout(cascadeCandies, 300);
+                } else {
+                    // Check if target score is reached
+                    if (currentScore >= targetScore) {
+                        gameActive = false;
+                        setTimeout(showReward, 500);
+                    } else if (movesLeft <= 0) {
+                        gameActive = false;
+                        setTimeout(() => {
+                            alert('Game Over! Try again.');
+                            resetLevel();
+                        }, 500);
+                    }
+                }
+            }
+            
+            // Check if there are valid moves left
+            function hasValidMoves() {
+                // Simplified check - in a real game, you would check all possible swaps
+                return true;
+            }
+            
+            // Give hint to player
+            function giveHint() {
+                alert("Look for potential matches of 3 or more candies of the same color in a row or column!");
+            }
+            
+            // Reset current level
+            function resetLevel() {
+                currentScore = 0;
+                movesLeft = 15 + Math.floor(currentLevel / 3) * 5;
+                gameActive = true;
+                generateBoard();
+                setupBoard();
+                updateUI();
+            }
+            
+            // Move to next level
+            function nextLevel() {
+                if (currentLevel < 30) {
+                    currentLevel++;
+                    currentScore = 0;
+                    movesLeft = 15 + Math.floor(currentLevel / 3) * 5;
+                    targetScore = 1000 + (currentLevel - 1) * 350;
+                    gameActive = true;
+                    generateBoard();
+                    setupBoard();
+                    updateUI();
+                } else {
+                    alert("Congratulations! You've completed all 30 levels!");
+                }
+            }
+            
+            // Show love letter reward
+            function showReward() {
+                // Update star rating
+                const scorePercentage = currentScore / targetScore;
+                stars.forEach((star, index) => {
+                    if (index < Math.floor(scorePercentage * 3)) {
+                        star.classList.add('filled');
+                    } else {
+                        star.classList.remove('filled');
+                    }
+                });
+                
+                // Show appropriate love letter
+                letterText.textContent = loveLetters[currentLevel - 1];
+                
+                // Create floating hearts
+                heartsContainer.innerHTML = '';
+                for (let i = 0; i < 20; i++) {
+                    const heart = document.createElement('div');
+                    heart.className = 'heart';
+                    heart.textContent = '💖';
+                    heart.style.left = `${Math.random() * 100}%`;
+                    heart.style.animationDelay = `${Math.random() * 5}s`;
+                    heartsContainer.appendChild(heart);
+                }
+                
+                // Show reward screen
+                rewardScreen.style.display = 'flex';
+            }
+            
+            // Update UI elements
+            function updateUI() {
+                levelElement.textContent = currentLevel;
+                movesElement.textContent = movesLeft;
+                targetElement.textContent = targetScore;
+                scoreElement.textContent = currentScore;
+                
+                // Show/hide next level button
+                if (currentScore >= targetScore && gameActive) {
+                    nextButton.style.display = 'block';
+                } else {
+                    nextButton.style.display = 'none';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
